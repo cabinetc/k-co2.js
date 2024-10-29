@@ -25,6 +25,6 @@
     "rollup": "^3.28.1"
   },
   "dependencies": {
-    "@tgwf/co2": "^0.13.6"
+    "@tgwf/co2": "^0.15.0"
   }
 }

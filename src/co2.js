@@ -15,10 +15,14 @@ import { co2, hosting, averageIntensity } from '@tgwf/co2';
      */
 
     const domain = window.location.hostname;
-    hosting.check(domain).then((result) => {
+    hosting.check(domain, {
+      verbose: false
+    }).then((result) => {
 
       const isGreenHost = result;
-      const emissions = new co2();
+      const emissions = new co2({
+        model: 'swd'
+      });
 
       /**
        * 1. Get average grid intensity data for all countries.
@@ -57,14 +61,42 @@ import { co2, hosting, averageIntensity } from '@tgwf/co2';
       results.sort((a, b) => b.transferSize - a.transferSize);
 
       /**
-       * Estimate carbon emissions for the current page view and log the data
-       * in the console.
+       * Estimate carbon emissions for the current page view.
        */
 
       const estimate = emissions.perVisitTrace(transferredBytes, isGreenHost, options);
       const grams = estimate.co2.toFixed(3);
-      const notice = `${results.length} requests emitted an estimated ${grams} grams of CO2. ${transferredBytes} bytes were transferred.`;
 
+      /**
+       * Define carbon rating scale.
+       * @link https://www.websitecarbon.com/introducing-the-website-carbon-rating-system/
+       */
+
+      const thresholds = {
+        "A+": 0.095,
+        "A": 0.186,
+        "B": 0.341,
+        "C": 0.493,
+        "D": 0.656,
+        "E": 0.846,
+        "F": 0.847
+      };
+
+      const scale = Object.entries(thresholds)
+        .map(([grade, threshold]) => ({ grade, threshold }))
+        .sort((a, b) => a.threshold - b.threshold);
+
+      /**
+       * Return the carbon rating for the current page and log the result in the
+       * console.
+       */
+
+      const getRating = (grams) => {
+        let result = scale.find(({ grade, threshold }) => (grams <= threshold));
+        return result.grade;
+      };
+
+      const notice = `${results.length} requests emitted an estimated ${grams} grams of CO2 for a carbon rating of ${getRating(grams)}. ${transferredBytes} bytes were transferred.`;
       console.log(notice);
     });
   });
