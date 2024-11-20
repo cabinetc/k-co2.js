@@ -79,7 +79,7 @@ import { co2, hosting, averageIntensity } from '@tgwf/co2';
         "C": 0.493,
         "D": 0.656,
         "E": 0.846,
-        "F": 0.847
+        "F": Infinity
       };
 
       const scale = Object.entries(thresholds)
